@@ -77,7 +77,13 @@ public class EmailSenderUtil {
                     participantV1.setParticipantExternalIdType(participant.getParticipantExternalIdType());
 
                     LOGGER.info("Findind email for user: " + participant.getParticipantName() + " " + participant.getParticipantExternalId() + " " + participant.getParticipantExternalIdType());
-                    emailProps.setEmailAddress(findEmail(participantV1));
+                    
+                    String userEmail = findEmail(participantV1);
+                    if(!StringUtils.isNotEmpty(userEmail)) {
+                    	LOGGER.warn("Email not found for user: "+ participant.getParticipantName() + " " + participant.getParticipantExternalId() + " " + participant.getParticipantExternalIdType());
+                    	continue;
+                    }
+		    emailProps.setEmailAddress(userEmail);
                     LOGGER.info("Email found for user: " + participant.getParticipantName() + " " + emailProps.getEmailAddress());
                     emailProps.setParticipantName(participant.getParticipantName());
 
@@ -91,13 +97,13 @@ public class EmailSenderUtil {
                     emailProps.setEventName(appointment.getTitle());
                     emailProps.setStatus(appointment.getStatus().name());
 
-                    if (Objects.nonNull(appointment.getNotes()) && appointment.getNotes().size() > 0) {
+                    if (!CollectionUtils.isEmpty(appointment.getNotes())) {
                         emailProps.setNewComment(appointment.getNotes().stream().findFirst().get().getSenderName() + ": " + appointment.getNotes().stream().findFirst().get().getNote());
                         emailProps.setCommentHistory(appointment.getNotes().stream().map(appointmentNoteV1 ->
                                 appointmentNoteV1.getSenderName() + ": " + appointmentNoteV1.getNote()).collect(Collectors.joining("<br>")));
                     }
 
-                    if (Objects.nonNull(appointment.getParticipants()) && appointment.getParticipants().size() > 0) {
+                    if (!CollectionUtils.isEmpty(appointment.getParticipants())) {
                         emailProps.setParticipants(
                                 appointment.getParticipants().stream().filter(appointmentParticipantV1 -> !participant.getParticipantName()
                                         .equals(appointmentParticipantV1.getParticipantName()))
@@ -191,13 +197,13 @@ public class EmailSenderUtil {
                 emailProps.setUserId(participant.getId());
                 emailProps.setEventName(appointment.getTitle());
                 emailProps.setStatus(appointment.getStatus());
-                if (Objects.nonNull(appointment.getNotes()) && appointment.getNotes().size() > 0) {
+                if (!CollectionUtils.isEmpty(appointment.getNotes())) {
                     emailProps.setNewComment(appointment.getNotes().get(appointment.getNotes().size() - 1).getNote());
                     emailProps.setCommentHistory(appointment.getNotes().stream().map(appointmentNoteV1 ->
                             appointmentNoteV1.getSenderName() + ": " + appointmentNoteV1.getNote()).collect(Collectors.joining("<br>")));
                 }
 
-                if (Objects.nonNull(appointment.getParticipants()) && appointment.getParticipants().size() > 0) {
+                if (!CollectionUtils.isEmpty(appointment.getParticipants())) {
                     emailProps.setParticipants(
                             appointment.getParticipants().stream().filter(appointmentParticipantV1 -> !participant.getParticipantName()
                                     .equals(appointmentParticipantV1.getParticipantName()))
@@ -210,7 +216,11 @@ public class EmailSenderUtil {
                 emailProps.setMessageType(EmailMessageType.EMAIL_EVENT_INVITATION_NOTIFICATION);
                 emailProps.setEventType(appointment.getType());
 
+<<<<<<< HEAD
                 if (Objects.nonNull(emailAddress) && StringUtils.isNotEmpty(emailAddress)) {
+=======
+                if (StringUtils.isNotEmpty(emailAddress)) {
+>>>>>>> b681d99495a81031ebdb5bc6c44391a96704d1b4
                     if (participant.getPrimary()) {
                         if (isAccessApprovalMeetingRequest && !isVirtualMeetingRequest) {
                             emailProps.setMessageType(EmailMessageType.EMAIL_IN_PERSON_MEETING_REQUEST_REQUESTER_CONFIRMATION);
@@ -390,7 +400,6 @@ public class EmailSenderUtil {
                 LOGGER.info("Information retrieved " + userInfoResponse);
                 return userInfoResponse;
         }
-        
         private String findWso2UserEmail(JsonNode userDetail) {
         	String emailId="";
         	int size= userDetail.get(WSO2_EMAILS_FIELD).size();
